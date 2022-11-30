@@ -13,21 +13,8 @@ import static io.gatling.javaapi.http.HttpDsl.status;
 public class LogginSimulation extends Simulation {
 
     String baseUrl = "https://rumman-laptop.therapbd.net:7002";
-
-    String loginName = "zihad";
-    String password = "therap321#";
-    String providerCode = "SQA-TH";
-
-//    FeederBuilder.Batchable<String> feeder =
-//            csv("login.csv").random();// 1, 2
-//
-//    ChainBuilder login = exec(http("login-get").get("/auth/login"))
-//            .feed(feeder)
-//            .exec(http("login-post")
-//                    .post("/auth/login")
-//                    .formParam("loginName", "#{username}")
-//                    .formParam("providerCode", "#{providerCode}")
-//                    .formParam("password", password));
+    int userCount = 10;
+    int requestPerUser = 100;
 
     ChainBuilder loggerTest = exec(http("logger-test")
             .get("/bt/loggerTest")
@@ -43,10 +30,11 @@ public class LogginSimulation extends Simulation {
                     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"
             );
 
-    ScenarioBuilder loggerScenario = scenario("loggerScenario").exec(loggerTest);
+    ScenarioBuilder loggerScenario = scenario("loggerScenario")
+            .repeat(requestPerUser)
+            .on(exec(loggerTest));
 
     {
-        setUp(loggerScenario.injectOpen(constantConcurrentUsers(100).during(10)))
-                .protocols(httpProtocol);
+        setUp(loggerScenario.injectOpen(atOnceUsers(userCount))).protocols(httpProtocol);
     }
 }
